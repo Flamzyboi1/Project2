@@ -4,73 +4,65 @@ namespace App\Http\Controllers;
 
 use App\Models\Car;
 use App\Models\Manufacturer;
+use App\Models\CarType;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
 
 class CarController extends Controller
 {
-    public function index(): View
+    public function index()
     {
-        $cars = Car::with('manufacturer')->get();
-        return view('cars.index', [
-            'title' => 'Cars List',
-            'cars' => $cars
-        ]);
+        $cars = Car::with(['manufacturer', 'carType'])->get();
+        return view('cars.index', compact('cars'));
     }
 
-    public function create(): View
+    public function create()
     {
         $manufacturers = Manufacturer::all();
-        return view('cars.create', [
-            'title' => 'Add New Car',
-            'manufacturers' => $manufacturers
-        ]);
+        $carTypes = CarType::all();
+        return view('cars.create', compact('manufacturers', 'carTypes'));
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request)
     {
         $request->validate([
-            'car_name' => 'required|string|max:255',
-            'model' => 'required|string|max:255',
+            'car_name' => 'required',
+            'model' => 'required',
+            'year' => 'required|integer',
             'manufacturer_id' => 'required|exists:manufacturers,id',
+            'car_type_id' => 'required|exists:car_types,id',
+            'image' => 'nullable|url',
         ]);
 
         Car::create($request->all());
 
-        return redirect()->route('cars.index')->with('success', 'Car added successfully.');
+        return redirect()->route('cars.index');
     }
 
-    public function edit(string $id): View
+    public function edit(Car $car)
     {
-        $car = Car::findOrFail($id);
         $manufacturers = Manufacturer::all();
-        return view('cars.edit', [
-            'title' => 'Edit Car',
-            'car' => $car,
-            'manufacturers' => $manufacturers
-        ]);
+        $carTypes = CarType::all();
+        return view('cars.edit', compact('car', 'manufacturers', 'carTypes'));
     }
 
-    public function update(Request $request, string $id): RedirectResponse
+    public function update(Request $request, Car $car)
     {
         $request->validate([
-            'car_name' => 'required|string|max:255',
-            'model' => 'required|string|max:255',
+            'car_name' => 'required',
+            'model' => 'required',
+            'year' => 'required|integer',
             'manufacturer_id' => 'required|exists:manufacturers,id',
+            'car_type_id' => 'required|exists:car_types,id',
         ]);
 
-        $car = Car::findOrFail($id);
         $car->update($request->all());
 
-        return redirect()->route('cars.index')->with('success', 'Car updated successfully.');
+        return redirect()->route('cars.index');
     }
 
-    public function destroy(string $id): RedirectResponse
+    public function destroy(Car $car)
     {
-        $car = Car::findOrFail($id);
         $car->delete();
-
-        return redirect()->route('cars.index')->with('success', 'Car deleted successfully.');
+        return redirect()->route('cars.index');
     }
 }

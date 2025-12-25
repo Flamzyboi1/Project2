@@ -4,69 +4,29 @@ namespace App\Http\Controllers;
 
 use App\Models\Manufacturer;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
 
 class ManufacturerController extends Controller
 {
-    public function index(): View
+    public function index()
     {
         $manufacturers = Manufacturer::all();
-        return view('manufacturers.index', [
-            'title' => 'Manufacturers List',
-            'manufacturers' => $manufacturers
-        ]);
+        return view('manufacturers.index', compact('manufacturers'));
     }
 
-    public function create(): View
-    {
-        return view('manufacturers.create', [
-            'title' => 'Add New Manufacturer'
-        ]);
-    }
-
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'address' => 'required|string|max:255',
+            'name' => 'required|unique:manufacturers,name',
+            'address' => 'required'
         ]);
 
         Manufacturer::create($request->all());
-
-        return redirect()->route('manufacturers.index')
-            ->with('success', 'Manufacturer created successfully.');
+        return redirect()->back();
     }
 
-    public function edit(string $id): View
+    public function destroy(Manufacturer $manufacturer)
     {
-        $manufacturer = Manufacturer::findOrFail($id);
-        return view('manufacturers.edit', [
-            'title' => 'Edit Manufacturer',
-            'manufacturer' => $manufacturer
-        ]);
-    }
-
-    public function update(Request $request, string $id): RedirectResponse
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'address' => 'required|string|max:255',
-        ]);
-
-        $manufacturer = Manufacturer::findOrFail($id);
-        $manufacturer->update($request->all());
-
-        return redirect()->route('manufacturers.index')
-            ->with('success', 'Manufacturer updated successfully.');
-    }
-
-    public function destroy(string $id): RedirectResponse
-    {
-        $manufacturer = Manufacturer::findOrFail($id);
         $manufacturer->delete();
-
-        return redirect()->route('manufacturers.index')
-            ->with('success', 'Manufacturer deleted successfully.');
+        return redirect()->back();
     }
 }
