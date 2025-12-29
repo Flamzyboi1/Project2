@@ -2,17 +2,31 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Car extends Model {
-    protected $fillable = ['manufacturer_id', 'car_type_id', 'model', 'car_name', 'year', 'image', 'description'];
+class Car extends Model
+{
+    use HasFactory;
 
-    public function manufacturer(): BelongsTo {
+    protected $fillable = [
+        'car_name',
+        'model',
+        'manufacturer_id',
+        'car_type_id',
+        'year',
+        'image',
+        'description',
+        'display'
+    ];
+
+    public function manufacturer()
+    {
         return $this->belongsTo(Manufacturer::class);
     }
 
-    public function carType(): BelongsTo {
+    public function carType()
+    {
         return $this->belongsTo(CarType::class);
     }
 }
